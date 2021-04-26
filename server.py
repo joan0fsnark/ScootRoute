@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 from flask import session, flash, make_response, redirect
+import os
 
 app = Flask(__name__)
 
@@ -9,7 +10,9 @@ app = Flask(__name__)
 # value, they can forge session information--so for sites with
 # security concerns, make sure this isn't checked into a
 # public place like GitHub
-app.secret_key = '4534gdghjk5d#$RGR^HDG'
+os.system("source secrets.sh")
+
+app.secret_key = os.environ['SECRETKEY']
 
 
 @app.route('/')

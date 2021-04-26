@@ -12,15 +12,15 @@
  *
  * @param   {H.service.Platform} platform    A stub class to access HERE services
  */
-function calculateRouteFromAtoB (platform) {
+function calculateRouteFromAtoB(platform) {
   var router = platform.getRoutingService(null, 8),
-      routeRequestParams = {
-        routingMode: 'fast',
-        transportMode: 'car',
-        origin: '52.5160,13.3779', // Brandenburg Gate
-        destination: '52.5206,13.3862',  // Friedrichstraße Railway Station
-        return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
-      };
+    routeRequestParams = {
+      routingMode: 'fast',
+      transportMode: 'scooter',
+      origin: '52.5160,13.3779', // Brandenburg Gate
+      destination: '52.5206,13.3862',  // Friedrichstraße Railway Station
+      return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
+    };
 
 
   router.calculateRoute(
@@ -37,11 +37,11 @@ function calculateRouteFromAtoB (platform) {
  */
 function onSuccess(result) {
   var route = result.routes[0];
- /*
-  * The styling of the route response on the map is entirely under the developer's control.
-  * A representitive styling can be found the full JS + HTML code of this example
-  * in the functions below:
-  */
+  /*
+   * The styling of the route response on the map is entirely under the developer's control.
+   * A representitive styling can be found the full JS + HTML code of this example
+   * in the functions below:
+   */
   addRouteShapeToMap(route);
   addManueversToMap(route);
   addWaypointsToPanel(route);
@@ -72,21 +72,46 @@ var routeInstructionsContainer = document.getElementById('panel');
 //Step 1: initialize communication with the platform
 // In your own code, replace variable window.apikey with your own apikey
 var platform = new H.service.Platform({
-  apikey: ''
+  apikey: 'DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g'
 });
 
 var defaultLayers = platform.createDefaultLayers();
 
 //Step 2: initialize a map - this map is centered over Berlin
 
-  
+//Default 
+var center = { lat: 0.0, lng: 0.0 };
+
 
 var map = new H.Map(mapContainer,
   defaultLayers.vector.normal.map,
-  {center: {lat:52.5160, lng:13.3779},
-  zoom: 13}
+  {
+    center,
+    zoom: 13
+  }
   // pixelRatio: window.devicePixelRatio || 1
 );
+
+var options = {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0
+};
+
+function success(pos) {
+  map.setCenter({
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude
+  });
+
+  // TODO: change
+}
+
+function error(err) {
+  console.warn(`ERROR(${err.code}): ${err.message}`);
+}
+
+navigator.geolocation.getCurrentPosition(success, error, options);
 
 
 // add a resize listener to make sure that the map occupies the whole container
@@ -108,12 +133,12 @@ var bubble;
  * @param  {H.geo.Point} position     The location on the map.
  * @param  {String} text              The contents of the infobubble.
  */
-function openBubble(position, text){
- if(!bubble){
-    bubble =  new H.ui.InfoBubble(
+function openBubble(position, text) {
+  if (!bubble) {
+    bubble = new H.ui.InfoBubble(
       position,
       // The FO property holds the province name.
-      {content: text});
+      { content: text });
     ui.addBubble(bubble);
   } else {
     bubble.setPosition(position);
@@ -127,7 +152,7 @@ function openBubble(position, text){
  * Creates a H.map.Polyline from the shape of the route and adds it to the map.
  * @param {Object} route A route as received from the H.service.RoutingService
  */
-function addRouteShapeToMap(route){
+function addRouteShapeToMap(route) {
   route.sections.forEach((section) => {
     // decode LineString from the flexible polyline
     let linestring = H.geo.LineString.fromFlexiblePolyline(section.polyline);
@@ -154,14 +179,14 @@ function addRouteShapeToMap(route){
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addManueversToMap(route){
+function addManueversToMap(route) {
   var svgMarkup = '<svg width="18" height="18" ' +
     'xmlns="http://www.w3.org/2000/svg">' +
     '<circle cx="8" cy="8" r="8" ' +
-      'fill="#1b468d" stroke="white" stroke-width="1"  />' +
+    'fill="#1b468d" stroke="white" stroke-width="1"  />' +
     '</svg>',
-    dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
-    group = new  H.map.Group(),
+    dotIcon = new H.map.Icon(svgMarkup, { anchor: { x: 8, y: 8 } }),
+    group = new H.map.Group(),
     i,
     j;
   route.sections.forEach((section) => {
@@ -169,12 +194,13 @@ function addManueversToMap(route){
 
     let actions = section.actions;
     // Add a marker for each maneuver
-    for (i = 0;  i < actions.length; i += 1) {
+    for (i = 0; i < actions.length; i += 1) {
       let action = actions[i];
-      var marker =  new H.map.Marker({
+      var marker = new H.map.Marker({
         lat: poly[action.offset * 3],
-        lng: poly[action.offset * 3 + 1]},
-        {icon: dotIcon});
+        lng: poly[action.offset * 3 + 1]
+      },
+        { icon: dotIcon });
       marker.instruction = action.instruction;
       group.addObject(marker);
     }
@@ -182,7 +208,7 @@ function addManueversToMap(route){
     group.addEventListener('tap', function (evt) {
       map.setCenter(evt.target.getGeometry());
       openBubble(
-         evt.target.getGeometry(), evt.target.instruction);
+        evt.target.getGeometry(), evt.target.instruction);
     }, false);
 
     // Add the maneuvers group to the map
@@ -197,7 +223,7 @@ function addManueversToMap(route){
  */
 function addWaypointsToPanel(route) {
   var nodeH3 = document.createElement('h3'),
-      labels = [];
+    labels = [];
 
   route.sections.forEach((section) => {
     labels.push(
@@ -205,7 +231,7 @@ function addWaypointsToPanel(route) {
     labels.push(
       section.turnByTurnActions[section.turnByTurnActions.length - 1].currentRoad.name[0].value)
   });
-  
+
   nodeH3.textContent = labels.join(' - ');
   routeInstructionsContainer.innerHTML = '';
   routeInstructionsContainer.appendChild(nodeH3);
@@ -215,9 +241,9 @@ function addWaypointsToPanel(route) {
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addSummaryToPanel(route){
+function addSummaryToPanel(route) {
   let duration = 0,
-      distance = 0;
+    distance = 0;
 
   route.sections.forEach((section) => {
     distance += section.travelSummary.length;
@@ -225,14 +251,14 @@ function addSummaryToPanel(route){
   });
 
   var summaryDiv = document.createElement('div'),
-   content = '';
-   content += '<b>Total distance</b>: ' + distance  + 'm. <br/>';
-   content += '<b>Travel Time</b>: ' + duration.toMMSS() + ' (in current traffic)';
+    content = '';
+  content += '<b>Total distance</b>: ' + distance + 'm. <br/>';
+  content += '<b>Travel Time</b>: ' + duration.toMMSS() + ' (in current traffic)';
 
 
   summaryDiv.style.fontSize = 'small';
-  summaryDiv.style.marginLeft ='5%';
-  summaryDiv.style.marginRight ='5%';
+  summaryDiv.style.marginLeft = '5%';
+  summaryDiv.style.marginRight = '5%';
   summaryDiv.innerHTML = content;
   routeInstructionsContainer.appendChild(summaryDiv);
 }
@@ -241,19 +267,19 @@ function addSummaryToPanel(route){
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addManueversToPanel(route){
+function addManueversToPanel(route) {
   var nodeOL = document.createElement('ol');
 
   nodeOL.style.fontSize = 'small';
-  nodeOL.style.marginLeft ='5%';
-  nodeOL.style.marginRight ='5%';
+  nodeOL.style.marginLeft = '5%';
+  nodeOL.style.marginRight = '5%';
   nodeOL.className = 'directions';
 
   route.sections.forEach((section) => {
     section.actions.forEach((action, idx) => {
       var li = document.createElement('li'),
-          spanArrow = document.createElement('span'),
-          spanInstruction = document.createElement('span');
+        spanArrow = document.createElement('span'),
+        spanInstruction = document.createElement('span');
 
       spanArrow.className = 'arrow ' + (action.direction || '') + action.action;
       spanInstruction.innerHTML = section.actions[idx].instruction;
@@ -269,9 +295,9 @@ function addManueversToPanel(route){
 
 
 Number.prototype.toMMSS = function () {
-  return  Math.floor(this / 60)  +' minutes '+ (this % 60)  + ' seconds.';
+  return Math.floor(this / 60) + ' minutes ' + (this % 60) + ' seconds.';
 }
 
 // Now use the map as required...
-calculateRouteFromAtoB (platform);
+calculateRouteFromAtoB(platform);
 // });
