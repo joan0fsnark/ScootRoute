@@ -1,6 +1,6 @@
 ---
- name: Map with Driving Route from A to B
- description: Request a driving route from A to B and display it on the map
+ name: 
+ description:
  resources:
    - https://heremaps.github.io/maps-api-for-javascript-examples/test-credentials.js
 

@@ -16,7 +16,7 @@ app.secret_key = '4534gdghjk5d#$RGR^HDG'
 def index():
     """Homepage."""
 
-    return render_template('demo.html')
+    return render_template('index.html')
 
 
 
