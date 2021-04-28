@@ -1,34 +1,88 @@
-
+import Search from './search.js';
 // document.addEventListener('DOMContentLoaded', function() {
 //   console.log('DOM is ready');
 
+/* ...
+* The rest of app.js goes here
+* ...
+*/
+const cerch = new Search('Berlin, DEU');
+console.log(cerch);
+
+// export { calculateIsoline, marker, router, geocoder }
+
+const platform = new H.service.Platform({
+  apikey: 'DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g'
+});
+
+const defaultLayers = platform.createDefaultLayers();
+const router = platform.getRoutingService(null, 8);
+const geocoder = platform.getGeocodingService();
+
 
 /**
- * Calculates and displays a car route from the Brandenburg Gate in the centre of Berlin
- * to Friedrichstraße Railway Station.
- *
- * A full list of available request parameters can be found in the Routing API documentation.
- * see:  http://developer.here.com/rest-apis/documentation/routing/topics/resource-calculate-route.html
- *
- * @param   {H.service.Platform} platform    A stub class to access HERE services
+ * Boilerplate map initialization code starts below:
  */
-function calculateRouteFromAtoB(platform) {
-  var router = platform.getRoutingService(null, 8),
-    routeRequestParams = {
-      routingMode: 'fast',
-      transportMode: 'scooter',
-      origin: '52.5160,13.3779', // Brandenburg Gate
-      destination: '52.5206,13.3862',  // Friedrichstraße Railway Station
-      return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
-    };
+
+// set up containers for the map  + panel
 
 
-  router.calculateRoute(
-    routeRequestParams,
-    onSuccess,
-    onError
-  );
-}
+
+// Create the default UI components
+
+var center = { lat: 0.0, lng: 0.0 };
+var mapContainer = document.getElementById('map');
+var map = new H.Map(mapContainer,
+  defaultLayers.vector.normal.map,
+  {
+    center,
+    zoom: 13
+  }
+  // pixelRatio: window.devicePixelRatio || 1
+);
+
+const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+const provider = map.getBaseLayer().getProvider();
+var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+var routeInstructionsContainer = document.getElementById('right-panel');
+
+// Hold a reference to any infobubble opened
+var bubble;
+
+let polygon;
+const marker = new H.map.Marker(center, { volatility: true });
+marker.draggable = true;
+
+
+
+map.addObject(marker);
+
+// Add event listeners for marker movement
+map.addEventListener('dragstart', evt => {
+  if (evt.target instanceof H.map.Marker) behavior.disable();
+}, false);
+
+map.addEventListener('dragend', evt => {
+  if (evt.target instanceof H.map.Marker) {
+    behavior.enable();
+    calculateIsoline();
+  }
+}, false);
+
+map.addEventListener('drag', evt => {
+  const pointer = evt.currentPointer;
+  if (evt.target instanceof H.map.Marker) {
+    evt.target.setGeometry(map.screenToGeo(pointer.viewportX, pointer.viewportY));
+  }
+}, false);
+
+
+window.addEventListener('resize', () => map.getViewPort().resize());
+
+
+
+
 /**
  * This function will be called once the Routing REST API provides a response
  * @param  {Object} result          A JSONP object representing the calculated route
@@ -58,45 +112,43 @@ function onError(error) {
   alert('Can\'t reach the remote server');
 }
 
-
 /**
- * Boilerplate map initialization code starts below:
+ * Calculates and displays a car route from the Brandenburg Gate in the centre of Berlin
+ * to Friedrichstraße Railway Station.
+ *
+ * A full list of available request parameters can be found in the Routing API documentation.
+ * see:  http://developer.here.com/rest-apis/documentation/routing/topics/resource-calculate-route.html
+ *
+ * @param   {H.service.Platform} platform    A stub class to access HERE services
  */
+function calculateRouteFromAtoB(platform) {
+  var routeRequestParams = {
+    routingMode: 'fast',
+    transportMode: 'scooter',
+    origin: '52.5160,13.3779', // Brandenburg Gate
+    destination: '52.5206,13.3862',  // Friedrichstraße Railway Station
+    return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
+  };
 
-// set up containers for the map  + panel
-var mapContainer = document.getElementById('map');
-console.log(mapContainer.innerHTML);
 
-var routeInstructionsContainer = document.getElementById('panel');
+  router.calculateRoute(
+    routeRequestParams,
+    onSuccess,
+    onError
+  );
+}
+
 
 //Step 1: initialize communication with the platform
 // In your own code, replace variable window.apikey with your own apikey
-var platform = new H.service.Platform({
-  apikey: 'DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g'
-});
 
-var defaultLayers = platform.createDefaultLayers();
+
+
 
 //Step 2: initialize a map - this map is centered over Berlin
 
 //Default 
-var center = { lat: 0.0, lng: 0.0 };
 
-
-var map = new H.Map(mapContainer,
-  defaultLayers.vector.normal.map,
-  {
-    center,
-    zoom: 13
-  }
-  // pixelRatio: window.devicePixelRatio || 1
-);
-
-var options = {
-  enableHighAccuracy: true,
-  timeout: 5000,
-  maximumAge: 0
-};
 
 function success(pos) {
   map.setCenter({
@@ -111,22 +163,22 @@ function error(err) {
   console.warn(`ERROR(${err.code}): ${err.message}`);
 }
 
+var options = {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0
+};
+
 navigator.geolocation.getCurrentPosition(success, error, options);
 
 
 // add a resize listener to make sure that the map occupies the whole container
-window.addEventListener('resize', () => map.getViewPort().resize());
+
 
 //Step 3: make the map interactive
 // MapEvents enables the event system
 // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
-var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
-// Create the default UI components
-var ui = H.ui.UI.createDefault(map, defaultLayers);
-
-// Hold a reference to any infobubble opened
-var bubble;
 
 /**
  * Opens/Closes a infobubble
@@ -293,7 +345,6 @@ function addManueversToPanel(route) {
   routeInstructionsContainer.appendChild(nodeOL);
 }
 
-
 Number.prototype.toMMSS = function () {
   return Math.floor(this / 60) + ' minutes ' + (this % 60) + ' seconds.';
 }
@@ -301,3 +352,5 @@ Number.prototype.toMMSS = function () {
 // Now use the map as required...
 calculateRouteFromAtoB(platform);
 // });
+
+export { geocoder, marker, router, center }

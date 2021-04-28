@@ -10,16 +10,24 @@ app = Flask(__name__)
 # value, they can forge session information--so for sites with
 # security concerns, make sure this isn't checked into a
 # public place like GitHub
-os.system("source secrets.sh")
 
-app.secret_key = os.environ['SECRETKEY']
+### NOT WORKING | raise KeyError(key) from None, KeyError: 'SECRETKEY' ###
+## os.system("source secrets.sh")
+## app.secret_key = os.environ['SECRETKEY']
 
 
 @app.route('/')
 def index():
-    """Homepage."""
+    """ Homepage."""
 
     return render_template('index.html')
+
+# @app.route('/form')
+# def user_search():
+#     """ Get user search values """
+    
+#     start = request.args.get('Start')
+#     end = request.args.get('Destination')
 
 
 
