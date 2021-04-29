@@ -6,51 +6,40 @@
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
   <title>ScootRoute</title>
 
-  <!-- <link rel="stylesheet" type="text/css" href="demo.css" />
-    <link rel="stylesheet" type="text/css" href="styles.css" />
-    <link rel="stylesheet" type="text/css" href="../template.css" /> -->
-  <!-- <script type="text/javascript" src='../test-credentials.js'></script>     -->
+  <!-- <script type="text/javascript" src='../test-credentials.js'></script> -->
   <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
   <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
   <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
   <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+  <!-- <script src="https://unpkg.com/better-dom@4.0.0/dist/better-dom.min.js"></script> -->
+  <!-- <script src="https://unpkg.com/better-dateinput-polyfill@3.2.7/dist/better-dateinput-polyfill.min.js"></script> -->
   <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
   <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+  <!-- <link rel="stylesheet" type="text/css" href="/static/css/sidebar.css"> -->
+  <link rel="stylesheet" type="text/css" href="/static/css/search.css">
+
+  <!-- <link rel="stylesheet" type="text/css" href="demo.css" /> -->
+  <!-- <link rel="stylesheet" type="text/css" href="styles.css" /> -->
+  <!-- <link rel="stylesheet" type="text/css" href="../template.css" /> -->
 </head>
 
 <body id="markers-on-the-map">
 
-  <div class="page-header">
-    <!-- TODO: add search form -->
-  </div>
-
-
-
-
-
-  <!-- <div id="search"></div> -->
-
-  <div id="floating-panel">
-
-    <!-- <div style="display: none"> -->
-    <select id="start" name="start">
-      <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location" />
-    </select>
-    <select id="end" name="end"></select>
-    <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location" />
-
-  </div>
-
-
-  <div id="right-panel"></div>
-
   <div id="map"></div>
-
+  <div id="right-panel"></div>
+  <div class="search-container">
+    <h2 class="city-label">Select a city</h2>
+    <div class="outer-city-field-container">
+      <img src="static/img/outline-search-24px.svg">
+      <div class="inner-city-field-container">
+        <div contenteditable="true" class="city-field"></div>
+        <div class="city-field-suggestion"></div>
+      </div>
+    </div>
+  </div>
+  </div>
 
   <script type="module" src='/static/js/index.js'></script>
-  <!-- <script type="text/javascript" src='/static/js/here.js'></script>
-  <script type="text/javascript" src='/static/js/search.js'></script>
-  <script type="text/javascript" src='/static/js/helpers.js'></script> -->
 </body>
 
 </html>

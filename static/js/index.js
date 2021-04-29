@@ -6,8 +6,8 @@ import Search from './search.js';
 * The rest of app.js goes here
 * ...
 */
-const cerch = new Search('Berlin, DEU');
-console.log(cerch);
+
+
 
 // export { calculateIsoline, marker, router, geocoder }
 
@@ -81,8 +81,6 @@ map.addEventListener('drag', evt => {
 window.addEventListener('resize', () => map.getViewPort().resize());
 
 
-
-
 /**
  * This function will be called once the Routing REST API provides a response
  * @param  {Object} result          A JSONP object representing the calculated route
@@ -150,13 +148,20 @@ function calculateRouteFromAtoB(platform) {
 //Default 
 
 
+
+var search_from = new Search();
+
 function success(pos) {
+  const latitude = pos.coords.latitude;
+  const longitude = pos.coords.longitude;
+
   map.setCenter({
-    lat: pos.coords.latitude,
-    lng: pos.coords.longitude
+    lat: latitude,
+    lng: longitude
   });
 
-  // TODO: change
+  var temp = fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${latitude},${longitude}&limit=1&lang=en&q=place`).then(res => res.json());
+  console.log(temp);
 }
 
 function error(err) {
@@ -170,6 +175,9 @@ var options = {
 };
 
 navigator.geolocation.getCurrentPosition(success, error, options);
+
+
+
 
 
 // add a resize listener to make sure that the map occupies the whole container
