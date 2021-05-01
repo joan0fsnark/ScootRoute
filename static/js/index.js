@@ -30,13 +30,14 @@ const geocoder = platform.getGeocodingService();
 
 // Create the default UI components
 
-var center = { lat: 0.0, lng: 0.0 };
+var center = { lat: '39.8283', lng: '98.5795' };
+
 var mapContainer = document.getElementById('map');
 var map = new H.Map(mapContainer,
   defaultLayers.vector.normal.map,
   {
     center,
-    zoom: 13
+    zoom: 0
   }
   // pixelRatio: window.devicePixelRatio || 1
 );
@@ -45,7 +46,7 @@ const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 const provider = map.getBaseLayer().getProvider();
 var ui = H.ui.UI.createDefault(map, defaultLayers);
 
-var routeInstructionsContainer = document.getElementById('right-panel');
+var routeInstructionsContainer = document.getElementById('directions');
 
 // Hold a reference to any infobubble opened
 var bubble;
@@ -160,9 +161,29 @@ function success(pos) {
     lng: longitude
   });
 
+
+// * temp * is place geocoding info we need!
   var temp = fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${latitude},${longitude}&limit=1&lang=en&q=place`).then(res => res.json());
   console.log(temp);
 }
+
+
+///// Function to do an Ajax call /// ****
+  // const doAjax = async () => {
+  //   const response = await fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${45.5118},${-122.67563}&limit=1&lang=en&q=place`); // Generate the Response object
+  //   if (response.ok) {
+  //     const jsonValue = await response.json(); // Get JSON value from the response body
+  //     return Promise.resolve(jsonValue);
+  //   } else {
+  //     return Promise.reject('*** file not found');
+  //   }
+  // }
+
+  // // Call the function and output value or error message to console
+  // doAjax().then(console.log).catch(console.log);
+
+///////// ****
+
 
 function error(err) {
   console.warn(`ERROR(${err.code}): ${err.message}`);

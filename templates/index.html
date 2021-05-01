@@ -16,7 +16,7 @@
   <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
   <link rel="stylesheet" type="text/css" href="/static/css/index.css">
   <!-- <link rel="stylesheet" type="text/css" href="/static/css/sidebar.css"> -->
-  <link rel="stylesheet" type="text/css" href="/static/css/search.css">
+  <!-- <link rel="stylesheet" type="text/css" href="/static/css/search.css"> -->
 
   <!-- <link rel="stylesheet" type="text/css" href="demo.css" /> -->
   <!-- <link rel="stylesheet" type="text/css" href="styles.css" /> -->
@@ -25,20 +25,23 @@
 
 <body id="markers-on-the-map">
 
-  <div id="map"></div>
-  <div id="right-panel"></div>
-  <div class="search-container">
-    <h2 class="city-label">Select a city</h2>
+  <!-- <div id="map"></div> -->
+  <!-- <div class="search-container"></div> -->
+  <div id="right-panel">
+   
     <div class="outer-city-field-container">
+      <h2 class="city-label">Select a city</h2>
       <img src="static/img/outline-search-24px.svg">
       <div class="inner-city-field-container">
         <div contenteditable="true" class="city-field"></div>
         <div class="city-field-suggestion"></div>
       </div>
     </div>
-  </div>
+    <div id="directions"></div>
   </div>
 
+  <div id="map"></div>
+  
   <script type="module" src='/static/js/index.js'></script>
 </body>
 
