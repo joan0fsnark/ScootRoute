@@ -2,14 +2,6 @@ import Search from './search.js';
 // document.addEventListener('DOMContentLoaded', function() {
 //   console.log('DOM is ready');
 
-/* ...
-* The rest of app.js goes here
-* ...
-*/
-
-
-
-// export { calculateIsoline, marker, router, geocoder }
 
 const platform = new H.service.Platform({
   apikey: 'DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g'
@@ -20,65 +12,51 @@ const router = platform.getRoutingService(null, 8);
 const geocoder = platform.getGeocodingService();
 
 
-/**
- * Boilerplate map initialization code starts below:
- */
-
-// set up containers for the map  + panel
-
-
-
-// Create the default UI components
-
-var center = { lat: '39.8283', lng: '98.5795' };
-
-var mapContainer = document.getElementById('map');
-var map = new H.Map(mapContainer,
-  defaultLayers.vector.normal.map,
-  {
-    center,
-    zoom: 0
-  }
-  // pixelRatio: window.devicePixelRatio || 1
-);
+//Create Map and set it to center above the USA
+var map = new H.Map(
+  document.getElementById('map'),
+  defaultLayers.vector.normal.map,{
+  center: {lat: 39.8283, lng: -98.5795},
+  zoom: 3.5
+  ,
+  pixelRatio: window.devicePixelRatio || 1
+  }); 
 
 const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 const provider = map.getBaseLayer().getProvider();
-var ui = H.ui.UI.createDefault(map, defaultLayers);
-
+var ui = H.ui.UI.createDefault(map, defaultLayers); 
 var routeInstructionsContainer = document.getElementById('directions');
 
-// Hold a reference to any infobubble opened
-var bubble;
+//Reference to any infobubble opened
+// var bubble;
 
-let polygon;
-const marker = new H.map.Marker(center, { volatility: true });
-marker.draggable = true;
+// let polygon;
 
+//Setup marker
+// const marker = new H.map.Marker(map.getCenter(), { volatility: true });
+// marker.draggable = true;
+// map.addObject(marker);
 
+// // Add event listeners for marker movement
+// map.addEventListener('dragstart', evt => {
+//   if (evt.target instanceof H.map.Marker) behavior.disable();
+// }, false);
 
-map.addObject(marker);
+// map.addEventListener('drag', evt => {
+//   const pointer = evt.currentPointer;
+//   if (evt.target instanceof H.map.Marker) {
+//     evt.target.setGeometry(map.screenToGeo(pointer.viewportX, pointer.viewportY));
+//   }
+// }, false);
 
-// Add event listeners for marker movement
-map.addEventListener('dragstart', evt => {
-  if (evt.target instanceof H.map.Marker) behavior.disable();
-}, false);
+// map.addEventListener('dragend', evt => {
+//   if (evt.target instanceof H.map.Marker) {
+//     behavior.enable();
+//     calculateIsoline();
+//   }
+// }, false);
 
-map.addEventListener('dragend', evt => {
-  if (evt.target instanceof H.map.Marker) {
-    behavior.enable();
-    calculateIsoline();
-  }
-}, false);
-
-map.addEventListener('drag', evt => {
-  const pointer = evt.currentPointer;
-  if (evt.target instanceof H.map.Marker) {
-    evt.target.setGeometry(map.screenToGeo(pointer.viewportX, pointer.viewportY));
-  }
-}, false);
-
-
+// add a resize listener to make sure that the map occupies the whole container
 window.addEventListener('resize', () => map.getViewPort().resize());
 
 
@@ -95,11 +73,11 @@ function onSuccess(result) {
    * A representitive styling can be found the full JS + HTML code of this example
    * in the functions below:
    */
-  addRouteShapeToMap(route);
-  addManueversToMap(route);
-  addWaypointsToPanel(route);
-  addManueversToPanel(route);
-  addSummaryToPanel(route);
+  // addRouteShapeToMap(route);
+  // addManueversToMap(route);
+  // addWaypointsToPanel(route);
+  // addManueversToPanel(route);
+  // addSummaryToPanel(route);
   // ... etc.
 }
 
@@ -120,12 +98,12 @@ function onError(error) {
  *
  * @param   {H.service.Platform} platform    A stub class to access HERE services
  */
-function calculateRouteFromAtoB(platform) {
+function calculateRouteFromAtoB(platform, orig, dest) {
   var routeRequestParams = {
     routingMode: 'fast',
-    transportMode: 'scooter',
-    origin: '52.5160,13.3779', // Brandenburg Gate
-    destination: '52.5206,13.3862',  // Friedrichstraße Railway Station
+    transportMode: 'scooter', //
+    origin: orig, // Brandenburg Gate
+    destination: dest,  // Friedrichstraße Railway Station
     return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
   };
 
@@ -137,52 +115,33 @@ function calculateRouteFromAtoB(platform) {
   );
 }
 
-
-//Step 1: initialize communication with the platform
-// In your own code, replace variable window.apikey with your own apikey
-
-
-
-
-//Step 2: initialize a map - this map is centered over Berlin
-
-//Default 
-
-
-
-var search_from = new Search();
+var search_from = new Search("USA");
+// var search_to = new Search();
 
 function success(pos) {
+
+
   const latitude = pos.coords.latitude;
   const longitude = pos.coords.longitude;
 
-  map.setCenter({
-    lat: latitude,
-    lng: longitude
-  });
+  // get the location based 
+  fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${latitude},${longitude}&limit=1&lang=en&q=close`).then(response => {
 
+    map.setCenter({
+      lat: latitude,
+      lng: longitude
+    });
 
-// * temp * is place geocoding info we need!
-  var temp = fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${latitude},${longitude}&limit=1&lang=en&q=place`).then(res => res.json());
-  console.log(temp);
+    map.setZoom(13);
+
+    //OMG this was such a pain!
+    response.json().then(data =>{
+      $('.city-field')[0].innerHTML = data.items[0].title;
+    });
+
+    
+  }).catch(err => console.error(err));
 }
-
-
-///// Function to do an Ajax call /// ****
-  // const doAjax = async () => {
-  //   const response = await fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${45.5118},${-122.67563}&limit=1&lang=en&q=place`); // Generate the Response object
-  //   if (response.ok) {
-  //     const jsonValue = await response.json(); // Get JSON value from the response body
-  //     return Promise.resolve(jsonValue);
-  //   } else {
-  //     return Promise.reject('*** file not found');
-  //   }
-  // }
-
-  // // Call the function and output value or error message to console
-  // doAjax().then(console.log).catch(console.log);
-
-///////// ****
 
 
 function error(err) {
@@ -195,13 +154,10 @@ var options = {
   maximumAge: 0
 };
 
+
+// Get current posisition of the user
 navigator.geolocation.getCurrentPosition(success, error, options);
 
-
-
-
-
-// add a resize listener to make sure that the map occupies the whole container
 
 
 //Step 3: make the map interactive
@@ -260,42 +216,42 @@ function addRouteShapeToMap(route) {
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addManueversToMap(route) {
-  var svgMarkup = '<svg width="18" height="18" ' +
-    'xmlns="http://www.w3.org/2000/svg">' +
-    '<circle cx="8" cy="8" r="8" ' +
-    'fill="#1b468d" stroke="white" stroke-width="1"  />' +
-    '</svg>',
-    dotIcon = new H.map.Icon(svgMarkup, { anchor: { x: 8, y: 8 } }),
-    group = new H.map.Group(),
-    i,
-    j;
-  route.sections.forEach((section) => {
-    let poly = H.geo.LineString.fromFlexiblePolyline(section.polyline).getLatLngAltArray();
+// function addManueversToMap(route) {
+//   var svgMarkup = '<svg width="18" height="18" ' +
+//     'xmlns="http://www.w3.org/2000/svg">' +
+//     '<circle cx="8" cy="8" r="8" ' +
+//     'fill="#1b468d" stroke="white" stroke-width="1"  />' +
+//     '</svg>',
+//     dotIcon = new H.map.Icon(svgMarkup, { anchor: { x: 8, y: 8 } }),
+//     group = new H.map.Group(),
+//     i,
+//     j;
+//   route.sections.forEach((section) => {
+//     let poly = H.geo.LineString.fromFlexiblePolyline(section.polyline).getLatLngAltArray();
 
-    let actions = section.actions;
-    // Add a marker for each maneuver
-    for (i = 0; i < actions.length; i += 1) {
-      let action = actions[i];
-      var marker = new H.map.Marker({
-        lat: poly[action.offset * 3],
-        lng: poly[action.offset * 3 + 1]
-      },
-        { icon: dotIcon });
-      marker.instruction = action.instruction;
-      group.addObject(marker);
-    }
+//     let actions = section.actions;
+//     // Add a marker for each maneuver
+//     for (i = 0; i < actions.length; i += 1) {
+//       let action = actions[i];
+//       var marker = new H.map.Marker({
+//         lat: poly[action.offset * 3],
+//         lng: poly[action.offset * 3 + 1]
+//       },
+//         { icon: dotIcon });
+//       marker.instruction = action.instruction;
+//       group.addObject(marker);
+//     }
 
-    group.addEventListener('tap', function (evt) {
-      map.setCenter(evt.target.getGeometry());
-      openBubble(
-        evt.target.getGeometry(), evt.target.instruction);
-    }, false);
+//     group.addEventListener('tap', function (evt) {
+//       map.setCenter(evt.target.getGeometry());
+//       openBubble(
+//         evt.target.getGeometry(), evt.target.instruction);
+//     }, false);
 
-    // Add the maneuvers group to the map
-    map.addObject(group);
-  });
-}
+//     // Add the maneuvers group to the map
+//     map.addObject(group);
+//   });
+// }
 
 
 /**
@@ -378,8 +334,11 @@ Number.prototype.toMMSS = function () {
   return Math.floor(this / 60) + ' minutes ' + (this % 60) + ' seconds.';
 }
 
+//Get current center of the map
+const center = () => { return map.center}
+
 // Now use the map as required...
-calculateRouteFromAtoB(platform);
+// calculateRouteFromAtoB(platform);
 // });
 
-export { geocoder, marker, router, center }
+export { geocoder, router, center }

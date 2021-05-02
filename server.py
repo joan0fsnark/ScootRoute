@@ -22,6 +22,12 @@ def index():
 
     return render_template('index.html')
 
+@app.route('/about')
+def about():
+    """ Homepage."""
+
+    return render_template('about.html')
+
 # @app.route('/form')
 # def user_search():
 #     """ Get user search values """

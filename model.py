@@ -18,6 +18,7 @@ def connect_to_db(flask_app, db_uri='postgresql:///users', echo=True):
     print('Connected to the db!') 
     #this won't really check that it is connect to the DB. 
     #Do this first before running py files!!!!
+    
     #FYI (seed_database.py) while run the DB for us (below steps)
     # Steps to create the db from sql dump file
     #step 1: createdb ratings 
