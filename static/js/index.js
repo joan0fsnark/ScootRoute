@@ -1,63 +1,78 @@
 import Search from './search.js';
-// document.addEventListener('DOMContentLoaded', function() {
-//   console.log('DOM is ready');
-
+import { apiKey } from './helpers.js';
 
 const platform = new H.service.Platform({
-  apikey: 'DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g'
+  apikey: apiKey
 });
 
 const defaultLayers = platform.createDefaultLayers();
 const router = platform.getRoutingService(null, 8);
 const geocoder = platform.getGeocodingService();
-
+var group = null;
 
 //Create Map and set it to center above the USA
 var map = new H.Map(
   document.getElementById('map'),
-  defaultLayers.vector.normal.map,{
-  center: {lat: 39.8283, lng: -98.5795},
+  defaultLayers.vector.normal.map, {
+  center: { lat: 39.8283, lng: -98.5795 },
   zoom: 3.5
   ,
   pixelRatio: window.devicePixelRatio || 1
-  }); 
+});
+
+//So the map resizes with the browser window
+window.addEventListener('resize', () => map.getViewPort().resize());
 
 const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 const provider = map.getBaseLayer().getProvider();
-var ui = H.ui.UI.createDefault(map, defaultLayers); 
+var ui = H.ui.UI.createDefault(map, defaultLayers);
 var routeInstructionsContainer = document.getElementById('directions');
 
-//Reference to any infobubble opened
-// var bubble;
+// Reference to any infobubble or polygon opened on the map
+var bubble;
+let polygon;
 
-// let polygon;
+var origin = { lat: 39.8283, lng: -98.5795 }; // Middle of the US by default
+var destination = { lat: 37.773972, lng: -122.431297 }; //HB by default
 
-//Setup marker
-// const marker = new H.map.Marker(map.getCenter(), { volatility: true });
-// marker.draggable = true;
-// map.addObject(marker);
+function setOrigin(lat, lng) {
 
-// // Add event listeners for marker movement
-// map.addEventListener('dragstart', evt => {
-//   if (evt.target instanceof H.map.Marker) behavior.disable();
-// }, false);
+  origin = { lat: lat, lng: lng };
+}
 
-// map.addEventListener('drag', evt => {
-//   const pointer = evt.currentPointer;
-//   if (evt.target instanceof H.map.Marker) {
-//     evt.target.setGeometry(map.screenToGeo(pointer.viewportX, pointer.viewportY));
-//   }
-// }, false);
+function setDestination(lat, lng) {
 
-// map.addEventListener('dragend', evt => {
-//   if (evt.target instanceof H.map.Marker) {
-//     behavior.enable();
-//     calculateIsoline();
-//   }
-// }, false);
+  destination = { lat: lat, lng: lng };
+}
 
-// add a resize listener to make sure that the map occupies the whole container
-window.addEventListener('resize', () => map.getViewPort().resize());
+
+
+//Some future proofing
+// function create_marker(lat, lng) {
+//   // Setup marker
+//   const marker = new H.map.Marker({ lat, lng }, { volatility: true });
+//   marker.draggable = true;
+//   map.addObject(marker);
+
+//   // Add event listeners for marker movement
+//   map.addEventListener('dragstart', evt => {
+//     if (evt.target instanceof H.map.Marker) behavior.disable();
+//   }, false);
+
+//   map.addEventListener('drag', evt => {
+//     const pointer = evt.currentPointer;
+//     if (evt.target instanceof H.map.Marker) {
+//       evt.target.setGeometry(map.screenToGeo(pointer.viewportX, pointer.viewportY));
+//     }
+//   }, false);
+
+//   map.addEventListener('dragend', evt => {
+//     if (evt.target instanceof H.map.Marker) {
+//       behavior.enable();
+//       calculateIsoline();
+//     }
+//   }, false);
+// }
 
 
 /**
@@ -68,17 +83,37 @@ window.addEventListener('resize', () => map.getViewPort().resize());
  */
 function onSuccess(result) {
   var route = result.routes[0];
+
+
   /*
    * The styling of the route response on the map is entirely under the developer's control.
    * A representitive styling can be found the full JS + HTML code of this example
    * in the functions below:
    */
-  // addRouteShapeToMap(route);
-  // addManueversToMap(route);
-  // addWaypointsToPanel(route);
-  // addManueversToPanel(route);
-  // addSummaryToPanel(route);
-  // ... etc.
+
+  if (route != undefined) {
+    console.log(map.getObjects());
+    // map.group = new H.map.Group();
+    // map.polyline = new H.map.Polyline(strip, {
+    //   style: {
+    //     lineWidth: 4,
+    //     strokeColor: 'rgba(0, 128, 255, 0.7)'
+    //   }
+    // });;
+    if (group !== null) {
+      console.log("WTF");
+      group.removeAll();
+    }
+
+    // map.Group.removeAll();
+
+    addRouteShapeToMap(route);
+    addManueversToMap(route);
+    addWaypointsToPanel(route);
+    addDirectionsToPanel(route);
+    addSummaryToPanel(route);
+    // ... etc.
+  }
 }
 
 /**
@@ -89,25 +124,17 @@ function onError(error) {
   alert('Can\'t reach the remote server');
 }
 
-/**
- * Calculates and displays a car route from the Brandenburg Gate in the centre of Berlin
- * to Friedrichstraße Railway Station.
- *
- * A full list of available request parameters can be found in the Routing API documentation.
- * see:  http://developer.here.com/rest-apis/documentation/routing/topics/resource-calculate-route.html
- *
- * @param   {H.service.Platform} platform    A stub class to access HERE services
- */
-function calculateRouteFromAtoB(platform, orig, dest) {
+function updateRoute() {
+  console.log("routing");
   var routeRequestParams = {
-    routingMode: 'fast',
-    transportMode: 'scooter', //
-    origin: orig, // Brandenburg Gate
-    destination: dest,  // Friedrichstraße Railway Station
-    return: 'polyline,turnByTurnActions,actions,instructions,travelSummary'
+    'routingMode': 'fast',
+    'transportMode': 'scooter',
+    'origin': origin.lat + "," + origin.lng,
+    'destination': destination.lat + "," + destination.lng,
+    'return': 'polyline,turnByTurnActions,actions,instructions,travelSummary'
   };
 
-
+  // `{lat: ${destination.lat}, lng: ${destination.lng}}
   router.calculateRoute(
     routeRequestParams,
     onSuccess,
@@ -115,34 +142,28 @@ function calculateRouteFromAtoB(platform, orig, dest) {
   );
 }
 
-var search_from = new Search("USA");
-// var search_to = new Search();
+
+// function updateRoute() {
+
+//   console.log("The origin is:" + origin.lat + "," + origin.lng);
+//   console.log("The destination is:" + destination.lat + "," + destination.lng );
+
+//   calculateRouteFromAtoB({lat: origin.lat, lng: origin.lng}, {lat: destination.lat, lng: destination.lng});
+// }
 
 function success(pos) {
-
-
   const latitude = pos.coords.latitude;
   const longitude = pos.coords.longitude;
 
-  // get the location based 
-  fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest?apiKey=DHpePUwM9TPEpJa9v4b35M171mOzu6RlOf6j3V-8w3g&at=${latitude},${longitude}&limit=1&lang=en&q=close`).then(response => {
+  setOrigin(latitude, longitude);
 
-    map.setCenter({
-      lat: latitude,
-      lng: longitude
-    });
+  map.setCenter({
+    lat: latitude,
+    lng: longitude
+  });
 
-    map.setZoom(13);
-
-    //OMG this was such a pain!
-    response.json().then(data =>{
-      $('.city-field')[0].innerHTML = data.items[0].title;
-    });
-
-    
-  }).catch(err => console.error(err));
+  map.setZoom(13);
 }
-
 
 function error(err) {
   console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -154,15 +175,8 @@ var options = {
   maximumAge: 0
 };
 
-
 // Get current posisition of the user
 navigator.geolocation.getCurrentPosition(success, error, options);
-
-
-
-//Step 3: make the map interactive
-// MapEvents enables the event system
-// Behavior implements default interactions for pan/zoom (also on mobile touch environments)
 
 
 /**
@@ -184,7 +198,6 @@ function openBubble(position, text) {
   }
 }
 
-
 /**
  * Creates a H.map.Polyline from the shape of the route and adds it to the map.
  * @param {Object} route A route as received from the H.service.RoutingService
@@ -198,7 +211,7 @@ function addRouteShapeToMap(route) {
     let polyline = new H.map.Polyline(linestring, {
       style: {
         lineWidth: 4,
-        strokeColor: 'rgba(0, 128, 255, 0.7)'
+        strokeColor: 'rgba(0, 128, 255, 0.7)',
       }
     });
 
@@ -211,48 +224,46 @@ function addRouteShapeToMap(route) {
   });
 }
 
-
 /**
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-// function addManueversToMap(route) {
-//   var svgMarkup = '<svg width="18" height="18" ' +
-//     'xmlns="http://www.w3.org/2000/svg">' +
-//     '<circle cx="8" cy="8" r="8" ' +
-//     'fill="#1b468d" stroke="white" stroke-width="1"  />' +
-//     '</svg>',
-//     dotIcon = new H.map.Icon(svgMarkup, { anchor: { x: 8, y: 8 } }),
-//     group = new H.map.Group(),
-//     i,
-//     j;
-//   route.sections.forEach((section) => {
-//     let poly = H.geo.LineString.fromFlexiblePolyline(section.polyline).getLatLngAltArray();
+function addManueversToMap(route) {
+  var svgMarkup = '<svg width="18" height="18" ' +
+    'xmlns="http://www.w3.org/2000/svg">' +
+    '<circle cx="8" cy="8" r="8" ' +
+    'fill="#1b468d" stroke="white" stroke-width="1"  />' +
+    '</svg>',
+    dotIcon = new H.map.Icon(svgMarkup, { anchor: { x: 8, y: 8 } }),
+    group = new H.map.Group(),
+    i,
+    j;
+  route.sections.forEach((section) => {
+    let poly = H.geo.LineString.fromFlexiblePolyline(section.polyline).getLatLngAltArray();
 
-//     let actions = section.actions;
-//     // Add a marker for each maneuver
-//     for (i = 0; i < actions.length; i += 1) {
-//       let action = actions[i];
-//       var marker = new H.map.Marker({
-//         lat: poly[action.offset * 3],
-//         lng: poly[action.offset * 3 + 1]
-//       },
-//         { icon: dotIcon });
-//       marker.instruction = action.instruction;
-//       group.addObject(marker);
-//     }
+    let actions = section.actions;
+    // Add a marker for each maneuver
+    for (i = 0; i < actions.length; i += 1) {
+      let action = actions[i];
+      var marker = new H.map.Marker({
+        lat: poly[action.offset * 3],
+        lng: poly[action.offset * 3 + 1]
+      },
+        { icon: dotIcon });
+      marker.instruction = action.instruction;
+      group.addObject(marker);
+    }
 
-//     group.addEventListener('tap', function (evt) {
-//       map.setCenter(evt.target.getGeometry());
-//       openBubble(
-//         evt.target.getGeometry(), evt.target.instruction);
-//     }, false);
+    group.addEventListener('tap', function (evt) {
+      map.setCenter(evt.target.getGeometry());
+      openBubble(
+        evt.target.getGeometry(), evt.target.instruction);
+    }, false);
 
-//     // Add the maneuvers group to the map
-//     map.addObject(group);
-//   });
-// }
-
+    // Add the maneuvers group to the map
+    map.addObject(group);
+  });
+}
 
 /**
  * Creates a series of H.map.Marker points from the route and adds them to the map.
@@ -292,7 +303,6 @@ function addSummaryToPanel(route) {
   content += '<b>Total distance</b>: ' + distance + 'm. <br/>';
   content += '<b>Travel Time</b>: ' + duration.toMMSS() + ' (in current traffic)';
 
-
   summaryDiv.style.fontSize = 'small';
   summaryDiv.style.marginLeft = '5%';
   summaryDiv.style.marginRight = '5%';
@@ -304,7 +314,7 @@ function addSummaryToPanel(route) {
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addManueversToPanel(route) {
+function addDirectionsToPanel(route) {
   var nodeOL = document.createElement('ol');
 
   nodeOL.style.fontSize = 'small';
@@ -335,10 +345,20 @@ Number.prototype.toMMSS = function () {
 }
 
 //Get current center of the map
-const center = () => { return map.center}
+const center = () => { return map.center }
 
-// Now use the map as required...
-// calculateRouteFromAtoB(platform);
-// });
+// When the document is ready add the listener to the scoot button
+document.addEventListener('DOMContentLoaded', function () {
+  var search_from = new Search("From?", 'origin', origin);
+  var search_to = new Search("To?", 'destination', destination);
 
-export { geocoder, router, center }
+  // Add listener for the scoot button
+  document.getElementById('scoot').addEventListener('click', evt => {
+    evt.preventDefault();
+
+    updateRoute("" + origin.lat + "," + origin.lng, "" + destination.lat + "," + destination.lng);
+    map.setZoom(10);
+  });
+});
+
+export { geocoder, updateRoute }

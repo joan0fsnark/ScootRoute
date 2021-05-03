@@ -96,14 +96,26 @@
   <!-- <div class="search-container"></div> -->
   <div id="right-panel">
 
-    <div class="outer-city-field-container">
-      <h2 class="city-label">Select a city</h2>
-      <img src="static/img/outline-search-24px.svg">
-      <div class="inner-city-field-container">
+    <div id="origin" class="outer-city-field-container">
+      <h2></h2> 
+      <!-- <img src="static/img/outline-search-24px.svg"> -->
+      <div class="inner-city-field-container">Origin
         <div contenteditable="true" class="city-field"></div>
         <div class="city-field-suggestion"></div>
       </div>
     </div>
+
+    <div id="destination" class="outer-city-field-container">
+      <h2></h2> 
+      <!-- <img src="static/img/outline-search-24px.svg"> -->
+      <div class="inner-city-field-container">Destination
+        <div contenteditable="true" class="city-field"></div>
+        <div class="city-field-suggestion"></div>
+      </div>
+    </div>
+
+    <button id="scoot">SCOOT</button>
+
     <div id="directions"></div>
   </div>
 

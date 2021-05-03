@@ -3,7 +3,7 @@
     height: 450px;
     background: grey;
 } */
-/* .directions li span.arrow {
+/* .directions li span.ar5
     display:inline-block;
     min-width:28px;
     min-height:28px;
@@ -208,6 +208,10 @@
    color: #ebebeb;
    text-align: left;
    background-color: #4E5D6C;
+ }
+
+  body, .about {
+    margin-top: 5rem
  }
  
  [tabindex="-1"]:focus:not(:focus-visible) {
@@ -4383,13 +4387,14 @@
    -ms-flex-wrap: wrap;
    flex-wrap: wrap;
    padding-left: 0;
-   margin-bottom: 2rem;
+   margin-bottom: 0;
    list-style: none;
  }
  
  .nav-link {
    display: block;
    padding: 0.5rem 1rem;
+   font-family: 'Racing Sans One', cursive;
  }
  
  .nav-link:hover, .nav-link:focus {
@@ -4482,7 +4487,7 @@
    justify-content: space-between;
    padding: 0.25rem 1rem;
    border-bottom: 1px solid #99CEFF;
-   /* margin-bottom: 5rem; */
+   margin-bottom: 5rem;
  }
  
  .navbar .container,
@@ -4500,10 +4505,11 @@
  .navbar-brand {
    display: inline-block;
    padding-top: 0.3125rem;
-   padding-bottom: 0.3125rem;
+   /* padding-bottom: 0.3125rem; */
    margin-right: 2rem;
-   font-size: 2rem;
-   font-family: 'Bad Script', cursive;
+   font-size: 3.25rem;
+   font-family: 'Racing Sans One', cursive;
+   /* font-family: 'Bad Script', cursive; */
    line-height: inherit;
    white-space: nowrap;
  }
@@ -4524,7 +4530,7 @@
  .navbar-nav .nav-link {
    padding-right: 0;
    padding-left: 0;
-   font-size: 1.5rem;
+   font-size: 2rem;
  }
  
  .navbar-nav .dropdown-menu {
@@ -4906,7 +4912,7 @@
    flex-direction: column;
    min-width: 0;
    word-wrap: break-word;
-   background-color: #4e5d6c;
+   background-color: #0a4b70;
    background-clip: border-box;
    border: 1px solid rgba(0, 0, 0, 0.125);
    border-radius: 0;

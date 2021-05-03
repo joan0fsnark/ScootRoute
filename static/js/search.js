@@ -1,36 +1,53 @@
-import { $ } from './helpers.js';
-import { autocompleteGeocodeUrl, requestGeocode } from './here.js';
-import { center } from './index.js';
+import { $, apiKey } from './helpers.js';
+import { geocoder, updateRoute } from './index.js';
 
 class Search {
 
-    constructor(startLocation) {
+    constructor(startLocation, rootElementId, endPoint) {
+
+        this.endPoint = endPoint;
         this.active = 0;
         this.matches = [];
-        this.container = $('.search-container');
-        this.input = $('.city-field');;
+        this.container = document.getElementById(rootElementId);
+        this.input = this.container.getElementsByClassName('city-field')[0];
+        this.suggestions = this.container.getElementsByClassName('city-field-suggestion')[0];
         this.input.innerText = startLocation;
         this.input.oninput = (evt) => this.updateField(evt);
         this.input.onkeydown = (evt) => this.onkeyinput(evt);
-        this.label = '';
+        this.label = this.container.getElementsByTagName('h2')[0];
     }
 
     async updateField(evt) {
         const value = evt.target.innerText;
 
-        if (value === null || value.length === 0) {
+        if (evt.data === null || value.length === 0 || value === "") {
             return;
         }
 
-        this.matches = await fetch(autocompleteGeocodeUrl(value)).then(res => res.json());
-        const match = this.matches.suggestions.filter(x => x.matchLevel === 'city')[0];
+        // console.log(this.endPoint);
 
-        if (match === undefined) {
-            $('.city-field-suggestion').innerText = '';
-        } else {
-            this.label = match.address.city + ', ' + match.countryCode;
-            this.active = match.locationId;
-            $('.city-field-suggestion').innerText = value + this.label.substring(value.length, this.label.length);
+        this.matches = await fetch(`https://autosuggest.search.hereapi.com/v1/autosuggest` +
+            `?at=${this.endPoint.lat},${this.endPoint.lng}` +
+            `&limit=10` +
+            `&apikey=${apiKey}` +
+            `&resultType=areas` +
+            `&q=${value}`
+        ).then(res => res.json());
+
+        const match = this.matches.items[0];
+
+        // console.log(match.position);
+        if (match === undefined) {// No matches
+            this.suggestions.innerText = '';
+        } else {// Matches
+
+            console.log(match.position);
+            this.label = match.title;
+
+            // + ', ' + match.countryCode;
+            this.endPoint = {lat: match.position.lat, lng: match.position.lng};
+
+            this.suggestions.innerText = value + this.label.substring(value.length, this.label.length);
 
         }
     }
@@ -38,123 +55,63 @@ class Search {
     onkeyinput(evt) {
         const code = evt.keyCode;
         if (code === 13 || code === 9) {
-            $('.city-field').innerText = this.label;
-            $('.city-field-suggestion').innerText = '';
-
+            this.input.innerText = this.label;
+            this.suggestions.innerText = '';
             evt.preventDefault();
-            this.selectMatch();
+
+            
+            console.log("The endPoint:" + this.endPoint.lat + "," + this.endPoint.lng);
+            // console.log(this.active);
+            // this.selectMatch(this.endPoint.lat, this.endPoint.lat);
+            updateRoute();
         }
     }
 
-    async selectMatch() {
-        const { Latitude: lat, Longitude: lng } = await requestGeocode(this.active);
-        center.lat = lat;
-        center.lng = lng;
+    // async selectMatch(latitude, longitude) {
+    //     // const { Latitude: lat, Longitude: lng } = await requestGeocode(this.active);
+    //     center.lat = latitude;
+    //     center.lng = longitude;
+
+   
+
+        // searchAndAutoComplete(lat, lng)
+        // console.log(center);
         // marker.setGeometry(center);
         // calculateIsoline();
     }
-}
 
-// function autocomplete(inp, arr) {
-//     /*the autocomplete function takes two arguments,
-//     the text field element and an array of possible autocompleted values:*/
-//     var currentFocus;
-//     /*execute a function when someone writes in the text field:*/
-//     inp.addEventListener("input", function (e) {
-//         var a, b, i, val = this.value;
-//         /*close any already open lists of autocompleted values*/
-//         closeAllLists();
-//         if (!val) { return false; }
-//         currentFocus = -1;
-//         /*create a DIV element that will contain the items (values):*/
-//         a = document.createElement("DIV");
-//         a.setAttribute("id", this.id + "autocomplete-list");
-//         a.setAttribute("class", "autocomplete-items");
-//         /*append the DIV element as a child of the autocomplete container:*/
-//         this.parentNode.appendChild(a);
-//         /*for each item in the array...*/
-//         for (i = 0; i < arr.length; i++) {
-//             /*check if the item starts with the same letters as the text field value:*/
-//             if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-//                 /*create a DIV element for each matching element:*/
-//                 b = document.createElement("DIV");
-//                 /*make the matching letters bold:*/
-//                 b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-//                 b.innerHTML += arr[i].substr(val.length);
-//                 /*insert a input field that will hold the current array item's value:*/
-//                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-//                 /*execute a function when someone clicks on the item value (DIV element):*/
-//                 b.addEventListener("click", function (e) {
-//                     /*insert the value for the autocomplete text field:*/
-//                     inp.value = this.getElementsByTagName("input")[0].value;
-//                     /*close the list of autocompleted values,
-//                     (or any other open lists of autocompleted values:*/
-//                     closeAllLists();
-//                 });
-//                 a.appendChild(b);
-//             }
-//         }
-//     });
-//     /*execute a function presses a key on the keyboard:*/
-//     inp.addEventListener("keydown", function (e) {
-//         var x = document.getElementById(this.id + "autocomplete-list");
-//         if (x) x = x.getElementsByTagName("div");
-//         if (e.keyCode == 40) {
-//             /*If the arrow DOWN key is pressed,
-//             increase the currentFocus variable:*/
-//             currentFocus++;
-//             /*and and make the current item more visible:*/
-//             addActive(x);
-//         } else if (e.keyCode == 38) { //up
-//             /*If the arrow UP key is pressed,
-//             decrease the currentFocus variable:*/
-//             currentFocus--;
-//             /*and and make the current item more visible:*/
-//             addActive(x);
-//         } else if (e.keyCode == 13) {
-//             /*If the ENTER key is pressed, prevent the form from being submitted,*/
-//             e.preventDefault();
-//             if (currentFocus > -1) {
-//                 /*and simulate a click on the "active" item:*/
-//                 if (x) x[currentFocus].click();
-//             }
-//         }
-//     });
-//     function addActive(x) {
-//         /*a function to classify an item as "active":*/
-//         if (!x) return false;
-//         /*start by removing the "active" class on all items:*/
-//         removeActive(x);
-//         if (currentFocus >= x.length) currentFocus = 0;
-//         if (currentFocus < 0) currentFocus = (x.length - 1);
-//         /*add class "autocomplete-active":*/
-//         x[currentFocus].classList.add("autocomplete-active");
-//     }
-//     function removeActive(x) {
-//         /*a function to remove the "active" class from all autocomplete items:*/
-//         for (var i = 0; i < x.length; i++) {
-//             x[i].classList.remove("autocomplete-active");
-//         }
-//     }
-//     function closeAllLists(elmnt) {
-//         /*close all autocomplete lists in the document,
-//         except the one passed as an argument:*/
-//         var x = document.getElementsByClassName("autocomplete-items");
-//         for (var i = 0; i < x.length; i++) {
-//             if (elmnt != x[i] && elmnt != inp) {
-//                 x[i].parentNode.removeChild(x[i]);
-//             }
-//         }
-//     }
-//     /*execute a function when someone clicks in the document:*/
-//     document.addEventListener("click", function (e) {
-//         closeAllLists(e.target);
-//     });
+    // searchAndAutoComplete(latitude, longitude) {
+
+    //     fetch(`https://revgeocode.search.hereapi.com/v1/revgeocode?apiKey=${apiKey}&at=${latitude},${longitude}&lang=en-US`).then(res => {
+
+    //         res.json().then(data => {
+    //             // field.innerHTML = data.items[0].title;
+
+    //             map.setCenter({
+    //                 lat: latitude,
+    //                 lng: longitude
+    //             });
+
+    //             map.setZoom(13);
+    //         })
+    //     }).catch(err => console.error(err));
+    // }
+// }
+
+// const requestGeocode = (locationid) => {
+//     return new Promise((resolve, reject) => {
+//         geocoder.geocode(
+//             { locationid },
+//             res => {
+
+//                 console.log(res);
+//                 const coordinates = res.Response.View[0].Result[0].Location.DisplayPosition;
+//                 resolve(coordinates);
+//             },
+//             err => reject(err)
+//         )
+//     })
 // }
 
 
 export default Search;
-export {
-    autocompleteGeocodeUrl,
-    requestGeocode
-}
