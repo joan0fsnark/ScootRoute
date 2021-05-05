@@ -82,9 +82,10 @@
   } */
   
   #right-panel {
-    font-family: "Roboto", "sans-serif";
+    /* font-family: "Roboto", "sans-serif"; */
     line-height: 30px;
     padding-left: 10px;
+    margin-top: 3rem;
   }
   
   #right-panel select,
@@ -211,7 +212,7 @@
  }
 
   body, .about {
-    margin-top: 5rem
+    margin-top: 5rem;
  }
  
  [tabindex="-1"]:focus:not(:focus-visible) {
@@ -309,6 +310,8 @@
    background-color: transparent;
  }
  
+ a, span, tr { white-space: pre; }
+
  a:hover {
    color: #9a4912;
    text-decoration: underline;
@@ -757,6 +760,7 @@
    width: 100%;
    padding-right: 15px;
    padding-left: 15px;
+   margin-top: 0.75rem;
  }
  
  .col {
@@ -4395,6 +4399,7 @@
    display: block;
    padding: 0.5rem 1rem;
    font-family: 'Racing Sans One', cursive;
+   font-size: 2.75rem;
  }
  
  .nav-link:hover, .nav-link:focus {

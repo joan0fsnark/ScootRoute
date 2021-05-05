@@ -33,7 +33,7 @@ var bubble;
 let polygon;
 
 var origin = { lat: 39.8283, lng: -98.5795 }; // Middle of the US by default
-var destination = { lat: 37.773972, lng: -122.431297 }; //HB by default
+var destination = { lat: 37.7889668, lng: -122.41163 }; //HB by default
 
 function setOrigin(lat, lng) {
 
